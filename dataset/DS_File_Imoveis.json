@@ -1,0 +1,31 @@
+{
+	"name": "DS_File_Imoveis",
+	"properties": {
+		"description": "Esse dataset vai servir para o Get Metadata dentro do ForEach (quando olhamos cada arquivo individualmente).",
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"container": {
+				"type": "string"
+			},
+			"folderPath": {
+				"type": "string"
+			},
+			"filename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "@dataset().fileName",
+				"folderPath": "@dataset().folderPath",
+				"fileSystem": "@dataset().container"
+			}
+		}
+	}
+}
