@@ -5,7 +5,14 @@
 			{
 				"name": "ingestao-camada-bronze",
 				"type": "DatabricksNotebook",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "NB_SaveMetadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -89,7 +96,14 @@
 			{
 				"name": "Filter1",
 				"type": "Filter",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "GM",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
@@ -105,11 +119,18 @@
 			{
 				"name": "ForEach1",
 				"type": "ForEach",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Filter1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Filter').output.Value",
+						"value": "@activity('Filter1').output.Value\n",
 						"type": "Expression"
 					},
 					"batchCount": 8,
@@ -236,7 +257,14 @@
 			{
 				"name": "NB_SaveMetadata",
 				"type": "DatabricksNotebook",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Wait1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -256,6 +284,22 @@
 				"linkedServiceName": {
 					"referenceName": "databricks_datafactory_link",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Wait1",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 15
 				}
 			}
 		],
