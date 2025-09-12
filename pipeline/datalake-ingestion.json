@@ -259,7 +259,7 @@
 				"type": "DatabricksNotebook",
 				"dependsOn": [
 					{
-						"activity": "Wait1",
+						"activity": "ForEach1",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -287,19 +287,19 @@
 				}
 			},
 			{
-				"name": "Wait1",
-				"type": "Wait",
+				"name": "Fail1",
+				"type": "Fail",
 				"dependsOn": [
 					{
-						"activity": "ForEach1",
+						"activity": "NB_SaveMetadata",
 						"dependencyConditions": [
-							"Succeeded"
+							"Failed"
 						]
 					}
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"waitTimeInSeconds": 15
+					"message": "Falhou"
 				}
 			}
 		],
