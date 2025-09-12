@@ -50,6 +50,32 @@
 				}
 			}
 		],
+		"parameters": {
+			"p_container": {
+				"type": "string",
+				"defaultValue": "imoveis"
+			},
+			"p_folder": {
+				"type": "string",
+				"defaultValue": "bronze/dados_brutos_imoveis"
+			},
+			"p_mask": {
+				"type": "string"
+			},
+			"p_modifiedStart": {
+				"type": "string",
+				"defaultValue": "2025-09-01T00:00:00Z"
+			},
+			"p_modifiedEnd": {
+				"type": "string",
+				"defaultValue": "2025-09-12T23:59:59Z"
+			}
+		},
+		"variables": {
+			"filesMetadata": {
+				"type": "Array"
+			}
+		},
 		"annotations": []
 	}
 }
