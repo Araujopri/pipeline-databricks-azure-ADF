@@ -7,9 +7,17 @@
 			"metadata": "Nome do Data Factory",
 			"defaultValue": "datafactory-curso-pri"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Cadeia de caracteres segura para 'accountKey' de 'AzureDataLakeStorage1'"
+		},
 		"databricks_datafactory_link_accessToken": {
 			"type": "secureString",
 			"metadata": "Cadeia de caracteres segura para 'accessToken' de 'databricks_datafactory_link'"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://datalakepriscylla.dfs.core.windows.net/"
 		},
 		"databricks_datafactory_link_properties_typeProperties_existingClusterId": {
 			"type": "string",
@@ -29,7 +37,14 @@
 					{
 						"name": "ingestao-camada-bronze",
 						"type": "DatabricksNotebook",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "NB_SaveMetadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -72,16 +87,393 @@
 							"referenceName": "databricks_datafactory_link",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "GM",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DS_Folder_Imoveis",
+								"type": "DatasetReference",
+								"parameters": {
+									"container": "@pipeline().parameters.p_container",
+									"folderPath": "@pipeline().parameters.p_folder"
+								}
+							},
+							"fieldList": [
+								"childItems",
+								"lastModified",
+								"itemName",
+								"itemType",
+								"exists"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "BinaryReadSettings"
+							}
+						}
+					},
+					{
+						"name": "Filter1",
+						"type": "Filter",
+						"dependsOn": [
+							{
+								"activity": "GM",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GM').output.childItems",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@and(\n  equals(item().type, 'File'),\n  or(\n    equals(pipeline().parameters.p_mask, ''),\n    endsWith(tolower(item().name), tolower(pipeline().parameters.p_mask))\n  )\n)\n",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Filter1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Filter1').output.Value\n",
+								"type": "Expression"
+							},
+							"batchCount": 8,
+							"activities": [
+								{
+									"name": "GM_File",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "DS_File_Imoveis",
+											"type": "DatasetReference",
+											"parameters": {
+												"container": "@pipeline().parameters.p_container",
+												"folderPath": "@pipeline().parameters.p_folder",
+												"filename": "@item().name"
+											}
+										},
+										"fieldList": [
+											"size",
+											"lastModified",
+											"contentMD5",
+											"exists",
+											"itemName",
+											"childItems",
+											"itemType"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "BinaryReadSettings"
+										}
+									}
+								},
+								{
+									"name": "Set variable1",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "GM_File",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "rowJson",
+										"value": [
+											"@concat(\n  '{'",
+											"\n  '\"pipelineRunId\":\"'",
+											" pipeline().RunId",
+											" '\"",
+											"'",
+											"\n  '\"fileName\":\"'",
+											" item().name",
+											" '\"",
+											"'",
+											"\n  '\"path\":\"'",
+											" pipeline().parameters.p_folder",
+											" '/'",
+											" item().name",
+											" '\"",
+											"'",
+											"\n  '\"sizeBytes\":'",
+											" string(activity('GM_File').output.size)",
+											" '",
+											"'",
+											"\n  '\"lastModifiedUtc\":\"'",
+											" string(activity('GM_File').output.lastModified)",
+											" '\"",
+											"'",
+											"\n  '\"md5\":\"'",
+											" coalesce(activity('GM_File').output.contentMD5, '')",
+											" '\"",
+											"'",
+											"\n  '\"columnCount\":'",
+											" string(coalesce(activity('GM_File').output.columnCount, 0))",
+											" '",
+											"'",
+											"\n  '\"exists\":'",
+											" toLower(string(activity('GM_File').output.exists))",
+											" '",
+											"'",
+											"\n  '\"capturedAtUtc\":\"'",
+											" utcnow(), '\"',\n  '}'\n)\n"
+										]
+									}
+								},
+								{
+									"name": "Acrescentar variavel",
+									"type": "AppendVariable",
+									"dependsOn": [
+										{
+											"activity": "Set variable1",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "filesMetadata",
+										"value": "@variables('rowJson')"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "NB_SaveMetadata",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "Wait1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/save_metadata",
+							"baseParameters": {
+								"files_metadata_json": "@string(variables('filesMetadata'))",
+								"container": "@pipeline().parameters.p_container",
+								"folder": "@pipeline().parameters.p_folder"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "databricks_datafactory_link",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "ForEach1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 15
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
+				"parameters": {
+					"p_container": {
+						"type": "string",
+						"defaultValue": "imoveis"
+					},
+					"p_folder": {
+						"type": "string",
+						"defaultValue": "bronze/dados_brutos_imoveis"
+					},
+					"p_mask": {
+						"type": "string"
+					},
+					"p_modifiedStart": {
+						"type": "string",
+						"defaultValue": "2025-09-01T00:00:00Z"
+					},
+					"p_modifiedEnd": {
+						"type": "string",
+						"defaultValue": "2025-09-12T23:59:59Z"
+					}
+				},
+				"variables": {
+					"filesMetadata": {
+						"type": "Array"
+					},
+					"rowJson": {
+						"type": "Array"
+					}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/databricks_datafactory_link')]"
+				"[concat(variables('factoryId'), '/linkedServices/databricks_datafactory_link')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Folder_Imoveis')]",
+				"[concat(variables('factoryId'), '/datasets/DS_File_Imoveis')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_File_Imoveis')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Esse dataset vai servir para o Get Metadata dentro do ForEach (quando olhamos cada arquivo individualmente).",
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"container": {
+						"type": "string"
+					},
+					"folderPath": {
+						"type": "string"
+					},
+					"filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().folderPath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().container",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Folder_Imoveis')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Esse dataset vai servir para o Get Metadata que lista os childItems da pasta",
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"container": {
+						"type": "string"
+					},
+					"folderPath": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@dataset().folderPath",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().container",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/databricks_datafactory_link')]",

@@ -5,8 +5,14 @@
 		"factoryName": {
 			"value": "datafactory-curso-pri"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
 		"databricks_datafactory_link_accessToken": {
 			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://datalakepriscylla.dfs.core.windows.net/"
 		},
 		"databricks_datafactory_link_properties_typeProperties_existingClusterId": {
 			"value": "0821-144459-bk0j0ouv"

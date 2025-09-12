@@ -7,9 +7,17 @@
 			"metadata": "Nome do Data Factory",
 			"defaultValue": "datafactory-curso-pri"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Cadeia de caracteres segura para 'accountKey' de 'AzureDataLakeStorage1'"
+		},
 		"databricks_datafactory_link_accessToken": {
 			"type": "secureString",
 			"metadata": "Cadeia de caracteres segura para 'accessToken' de 'databricks_datafactory_link'"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://datalakepriscylla.dfs.core.windows.net/"
 		},
 		"databricks_datafactory_link_properties_typeProperties_existingClusterId": {
 			"type": "string",
@@ -42,8 +50,14 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"AzureDataLakeStorage1_accountKey": {
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					},
 					"databricks_datafactory_link_accessToken": {
 						"value": "[parameters('databricks_datafactory_link_accessToken')]"
+					},
+					"AzureDataLakeStorage1_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
 					},
 					"databricks_datafactory_link_properties_typeProperties_existingClusterId": {
 						"value": "[parameters('databricks_datafactory_link_properties_typeProperties_existingClusterId')]"
