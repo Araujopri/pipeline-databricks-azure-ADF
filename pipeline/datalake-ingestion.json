@@ -295,11 +295,30 @@
 						"dependencyConditions": [
 							"Failed"
 						]
+					},
+					{
+						"activity": "GM",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Filter1",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Failed"
+						]
 					}
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"message": "Falhou"
+					"message": "@concat('Pipeline falhou. RunId=', pipeline().RunId)",
+					"errorCode": "GENERIC_PIPELINE_FAILURE"
 				}
 			}
 		],
