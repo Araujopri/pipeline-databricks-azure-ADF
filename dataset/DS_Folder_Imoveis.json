@@ -1,0 +1,26 @@
+{
+	"name": "DS_Folder_Imoveis",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"container": {
+				"type": "string"
+			},
+			"folderPath": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "@dataset().folderPath",
+				"fileSystem": "@dataset().container"
+			}
+		}
+	}
+}
