@@ -64,7 +64,11 @@
 				"typeProperties": {
 					"dataset": {
 						"referenceName": "DS_Folder_Imoveis",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"container": "@pipeline().parameters.p_container",
+							"folderPath": "@pipeline().parameters.p_folder"
+						}
 					},
 					"fieldList": [
 						"childItems",
