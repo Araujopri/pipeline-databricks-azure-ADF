@@ -93,11 +93,11 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get Metadata da Pasta').output.childItems",
+						"value": "@activity('GM').output.childItems",
 						"type": "Expression"
 					},
 					"condition": {
-						"value": "@and(   equals(item().type, 'File'),   or(     equals(pipeline().parameters.p_mask, ''),     endsWith(tolower(item().name), tolower(pipeline().parameters.p_mask))   ) )",
+						"value": "@and(\n  equals(item().type, 'File'),\n  or(\n    equals(pipeline().parameters.p_mask, ''),\n    endsWith(tolower(item().name), tolower(pipeline().parameters.p_mask))\n  )\n)\n",
 						"type": "Expression"
 					}
 				}
