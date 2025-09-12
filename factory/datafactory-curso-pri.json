@@ -1,0 +1,9 @@
+{
+	"name": "datafactory-curso-pri",
+	"location": "eastus2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "fd4bf877-7c19-4958-9082-9c17779bd6b1",
+		"tenantId": "dc61d494-96b7-497b-938a-24df549598e0"
+	}
+}
