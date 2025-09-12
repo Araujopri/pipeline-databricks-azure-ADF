@@ -1,6 +1,7 @@
 {
 	"name": "DS_Folder_Imoveis",
 	"properties": {
+		"description": "Esse dataset vai servir para o Get Metadata que lista os childItems da pasta",
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage1",
 			"type": "LinkedServiceReference"
