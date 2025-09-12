@@ -48,6 +48,211 @@
 					"referenceName": "databricks_datafactory_link",
 					"type": "LinkedServiceReference"
 				}
+			},
+			{
+				"name": "GM",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_Folder_Imoveis",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems",
+						"lastModified",
+						"itemName",
+						"itemType",
+						"exists"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Filter1",
+				"type": "Filter",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Metadata da Pasta').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@and(   equals(item().type, 'File'),   or(     equals(pipeline().parameters.p_mask, ''),     endsWith(tolower(item().name), tolower(pipeline().parameters.p_mask))   ) )",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Filter').output.Value",
+						"type": "Expression"
+					},
+					"batchCount": 8,
+					"activities": [
+						{
+							"name": "GM_File",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "DS_File_Imoveis",
+									"type": "DatasetReference",
+									"parameters": {
+										"container": "@pipeline().parameters.p_container",
+										"folderPath": "@pipeline().parameters.p_folder",
+										"filename": "@item().name"
+									}
+								},
+								"fieldList": [
+									"size",
+									"lastModified",
+									"contentMD5",
+									"exists",
+									"itemName",
+									"childItems",
+									"itemType"
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "BinaryReadSettings"
+								}
+							}
+						},
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "GM_File",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "rowJson",
+								"value": [
+									"@concat(\n  '{'",
+									"\n  '\"pipelineRunId\":\"'",
+									" pipeline().RunId",
+									" '\"",
+									"'",
+									"\n  '\"fileName\":\"'",
+									" item().name",
+									" '\"",
+									"'",
+									"\n  '\"path\":\"'",
+									" pipeline().parameters.p_folder",
+									" '/'",
+									" item().name",
+									" '\"",
+									"'",
+									"\n  '\"sizeBytes\":'",
+									" string(activity('GM_File').output.size)",
+									" '",
+									"'",
+									"\n  '\"lastModifiedUtc\":\"'",
+									" string(activity('GM_File').output.lastModified)",
+									" '\"",
+									"'",
+									"\n  '\"md5\":\"'",
+									" coalesce(activity('GM_File').output.contentMD5, '')",
+									" '\"",
+									"'",
+									"\n  '\"columnCount\":'",
+									" string(coalesce(activity('GM_File').output.columnCount, 0))",
+									" '",
+									"'",
+									"\n  '\"exists\":'",
+									" toLower(string(activity('GM_File').output.exists))",
+									" '",
+									"'",
+									"\n  '\"capturedAtUtc\":\"'",
+									" utcnow(), '\"',\n  '}'\n)\n"
+								]
+							}
+						},
+						{
+							"name": "Acrescentar variavel",
+							"type": "AppendVariable",
+							"dependsOn": [
+								{
+									"activity": "Set variable1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "filesMetadata",
+								"value": "@variables('rowJson')"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "NB_SaveMetadata",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/save_metadata",
+					"baseParameters": {
+						"files_metadata_json": "@string(variables('filesMetadata'))",
+						"container": "@pipeline().parameters.p_container",
+						"folder": "@pipeline().parameters.p_folder"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "databricks_datafactory_link",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"parameters": {
@@ -73,6 +278,9 @@
 		},
 		"variables": {
 			"filesMetadata": {
+				"type": "Array"
+			},
+			"rowJson": {
 				"type": "Array"
 			}
 		},
