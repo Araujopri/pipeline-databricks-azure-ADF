@@ -294,8 +294,6 @@
 						{
 							"name": "Acrescentar variavel",
 							"type": "AppendVariable",
-							"state": "Inactive",
-							"onInactiveMarkAs": "Succeeded",
 							"dependsOn": [
 								{
 									"activity": "Set variable1",
