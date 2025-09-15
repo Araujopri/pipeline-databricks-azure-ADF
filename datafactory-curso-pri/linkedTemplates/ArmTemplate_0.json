@@ -380,7 +380,7 @@
 								"value": "@coalesce(activity('Filter1').output.Value, json('[]'))\n\n",
 								"type": "Expression"
 							},
-							"batchCount": 8,
+							"isSequential": true,
 							"activities": [
 								{
 									"name": "GM_File",
@@ -438,17 +438,12 @@
 									"userProperties": [],
 									"typeProperties": {
 										"variableName": "rowJson",
-										"value": [
-											"@concat('{\"fileName\":\"'",
-											" item().name, '\"}')\n"
-										]
+										"value": "[[\"@concat('{\\\"fileName\\\":\\\"'\",\" item().name, '\\\"}')\\n\"]"
 									}
 								},
 								{
 									"name": "Acrescentar variavel",
 									"type": "AppendVariable",
-									"state": "Inactive",
-									"onInactiveMarkAs": "Succeeded",
 									"dependsOn": [
 										{
 											"activity": "Set variable1",
@@ -500,7 +495,7 @@
 						"type": "Array"
 					},
 					"rowJson": {
-						"type": "Array"
+						"type": "String"
 					}
 				},
 				"annotations": []
