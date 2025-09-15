@@ -3,60 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ingestao-camada-bronze",
-				"type": "DatabricksNotebook",
-				"dependsOn": [
-					{
-						"activity": "NB_SaveMetadata",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/inbound_to_bronze"
-				},
-				"linkedServiceName": {
-					"referenceName": "databricks_datafactory_link",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "ingestao-camada-silver",
-				"type": "DatabricksNotebook",
-				"dependsOn": [
-					{
-						"activity": "ingestao-camada-bronze",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/bronze_to_silver"
-				},
-				"linkedServiceName": {
-					"referenceName": "databricks_datafactory_link",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
 				"name": "GM",
 				"type": "GetMetadata",
 				"dependsOn": [],
@@ -117,193 +63,11 @@
 				}
 			},
 			{
-				"name": "ForEach1",
-				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "If Condition1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('Filter1').output.Value\n",
-						"type": "Expression"
-					},
-					"batchCount": 8,
-					"activities": [
-						{
-							"name": "GM_File",
-							"type": "GetMetadata",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"dataset": {
-									"referenceName": "DS_File_Imoveis",
-									"type": "DatasetReference",
-									"parameters": {
-										"container": "@pipeline().parameters.p_container",
-										"folderPath": "@pipeline().parameters.p_folder",
-										"filename": "@item().name"
-									}
-								},
-								"fieldList": [
-									"size",
-									"lastModified",
-									"contentMD5",
-									"exists",
-									"itemName",
-									"childItems",
-									"itemType"
-								],
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"enablePartitionDiscovery": false
-								},
-								"formatSettings": {
-									"type": "BinaryReadSettings"
-								}
-							}
-						},
-						{
-							"name": "Set variable1",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "GM_File",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "rowJson",
-								"value": [
-									"@concat(\n  '{'",
-									"\n  '\"pipelineRunId\":\"'",
-									" pipeline().RunId",
-									" '\"",
-									"'",
-									"\n  '\"fileName\":\"'",
-									" item().name",
-									" '\"",
-									"'",
-									"\n  '\"path\":\"'",
-									" pipeline().parameters.p_folder",
-									" '/'",
-									" item().name",
-									" '\"",
-									"'",
-									"\n  '\"sizeBytes\":'",
-									" string(activity('GM_File').output.size)",
-									" '",
-									"'",
-									"\n  '\"lastModifiedUtc\":\"'",
-									" string(activity('GM_File').output.lastModified)",
-									" '\"",
-									"'",
-									"\n  '\"md5\":\"'",
-									" coalesce(activity('GM_File').output.contentMD5, '')",
-									" '\"",
-									"'",
-									"\n  '\"columnCount\":'",
-									" string(coalesce(activity('GM_File').output.columnCount, 0))",
-									" '",
-									"'",
-									"\n  '\"exists\":'",
-									" toLower(string(activity('GM_File').output.exists))",
-									" '",
-									"'",
-									"\n  '\"capturedAtUtc\":\"'",
-									" utcnow(), '\"',\n  '}'\n)\n"
-								]
-							}
-						},
-						{
-							"name": "Acrescentar variavel",
-							"type": "AppendVariable",
-							"dependsOn": [
-								{
-									"activity": "Set variable1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "filesMetadata",
-								"value": "@variables('rowJson')"
-							}
-						}
-					]
-				}
-			},
-			{
-				"name": "NB_SaveMetadata",
-				"type": "DatabricksNotebook",
-				"dependsOn": [
-					{
-						"activity": "ForEach1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/save_metadata",
-					"baseParameters": {
-						"files_metadata_json": "@string(variables('filesMetadata'))",
-						"container": "@pipeline().parameters.p_container",
-						"folder": "@pipeline().parameters.p_folder"
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "databricks_datafactory_link",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
 				"name": "Fail1",
 				"type": "Fail",
 				"dependsOn": [
 					{
-						"activity": "NB_SaveMetadata",
-						"dependencyConditions": [
-							"Failed"
-						]
-					},
-					{
 						"activity": "Filter1",
-						"dependencyConditions": [
-							"Failed"
-						]
-					},
-					{
-						"activity": "ForEach1",
 						"dependencyConditions": [
 							"Failed"
 						]
@@ -337,7 +101,226 @@
 					"expression": {
 						"value": "@greater(length(activity('Filter1').output.Value), 0)\n",
 						"type": "Expression"
-					}
+					},
+					"ifTrueActivities": [
+						{
+							"name": "ForEach1",
+							"type": "ForEach",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"items": {
+									"value": "@activity('Filter1').output.Value\n",
+									"type": "Expression"
+								},
+								"batchCount": 8,
+								"activities": [
+									{
+										"name": "GM_File",
+										"type": "GetMetadata",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"dataset": {
+												"referenceName": "DS_File_Imoveis",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": "@pipeline().parameters.p_container",
+													"folderPath": "@pipeline().parameters.p_folder",
+													"filename": "@item().name"
+												}
+											},
+											"fieldList": [
+												"size",
+												"lastModified",
+												"contentMD5",
+												"exists",
+												"itemName",
+												"childItems",
+												"itemType"
+											],
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "BinaryReadSettings"
+											}
+										}
+									},
+									{
+										"name": "Set variable1",
+										"type": "SetVariable",
+										"dependsOn": [
+											{
+												"activity": "GM_File",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "rowJson",
+											"value": [
+												"@concat(\n  '{'",
+												"\n  '\"pipelineRunId\":\"'",
+												" pipeline().RunId",
+												" '\"",
+												"'",
+												"\n  '\"fileName\":\"'",
+												" item().name",
+												" '\"",
+												"'",
+												"\n  '\"path\":\"'",
+												" pipeline().parameters.p_folder",
+												" '/'",
+												" item().name",
+												" '\"",
+												"'",
+												"\n  '\"sizeBytes\":'",
+												" string(activity('GM_File').output.size)",
+												" '",
+												"'",
+												"\n  '\"lastModifiedUtc\":\"'",
+												" string(activity('GM_File').output.lastModified)",
+												" '\"",
+												"'",
+												"\n  '\"md5\":\"'",
+												" coalesce(activity('GM_File').output.contentMD5, '')",
+												" '\"",
+												"'",
+												"\n  '\"columnCount\":'",
+												" string(coalesce(activity('GM_File').output.columnCount, 0))",
+												" '",
+												"'",
+												"\n  '\"exists\":'",
+												" toLower(string(activity('GM_File').output.exists))",
+												" '",
+												"'",
+												"\n  '\"capturedAtUtc\":\"'",
+												" utcnow(), '\"',\n  '}'\n)\n"
+											]
+										}
+									},
+									{
+										"name": "Acrescentar variavel",
+										"type": "AppendVariable",
+										"dependsOn": [
+											{
+												"activity": "Set variable1",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "filesMetadata",
+											"value": "@variables('rowJson')"
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "NB_SaveMetadata",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "ForEach1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/save_metadata",
+								"baseParameters": {
+									"files_metadata_json": "@string(variables('filesMetadata'))",
+									"container": "@pipeline().parameters.p_container",
+									"folder": "@pipeline().parameters.p_folder"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "databricks_datafactory_link",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "ingestao-camada-bronze",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "NB_SaveMetadata",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/inbound_to_bronze"
+							},
+							"linkedServiceName": {
+								"referenceName": "databricks_datafactory_link",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "ingestao-camada-silver",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "ingestao-camada-bronze",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/bronze_to_silver"
+							},
+							"linkedServiceName": {
+								"referenceName": "databricks_datafactory_link",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
 				}
 			}
 		],
