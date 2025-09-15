@@ -121,7 +121,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Filter1",
+						"activity": "If Condition1",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -297,12 +297,6 @@
 						]
 					},
 					{
-						"activity": "GM",
-						"dependencyConditions": [
-							"Failed"
-						]
-					},
-					{
 						"activity": "Filter1",
 						"dependencyConditions": [
 							"Failed"
@@ -313,12 +307,37 @@
 						"dependencyConditions": [
 							"Failed"
 						]
+					},
+					{
+						"activity": "If Condition1",
+						"dependencyConditions": [
+							"Failed"
+						]
 					}
 				],
 				"userProperties": [],
 				"typeProperties": {
 					"message": "@concat('Pipeline falhou. RunId=', pipeline().RunId)",
 					"errorCode": "GENERIC_PIPELINE_FAILURE"
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Filter1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(length(activity('Filter1').output.Value), 0)\n",
+						"type": "Expression"
+					}
 				}
 			}
 		],
