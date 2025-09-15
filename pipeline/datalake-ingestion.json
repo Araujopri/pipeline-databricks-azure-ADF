@@ -13,6 +13,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
+				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
 						"referenceName": "DS_Folder_Imoveis",
@@ -31,6 +32,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
@@ -41,8 +43,6 @@
 			{
 				"name": "Filter1",
 				"type": "Filter",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "GM",
@@ -66,8 +66,6 @@
 			{
 				"name": "Fail1",
 				"type": "Fail",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Filter1",
@@ -84,15 +82,16 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"message": "@concat('Pipeline falhou. RunId=', pipeline().RunId)",
+					"message": {
+						"value": "@concat('Pipeline falhou. RunId=', pipeline().RunId)",
+						"type": "Expression"
+					},
 					"errorCode": "GENERIC_PIPELINE_FAILURE"
 				}
 			},
 			{
 				"name": "If Condition1",
 				"type": "IfCondition",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Failed",
 				"dependsOn": [
 					{
 						"activity": "ForEach1",
@@ -114,7 +113,10 @@
 							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
-								"message": "@concat('Nenhum arquivo encontrado em ',         pipeline().parameters.p_container,'/',pipeline().parameters.p_folder,         '. RunId=', pipeline().RunId)",
+								"message": {
+									"value": "@concat('Nenhum arquivo encontrado em ',         pipeline().parameters.p_container,'/',pipeline().parameters.p_folder,         '. RunId=', pipeline().RunId)",
+									"type": "Expression"
+								},
 								"errorCode": "NO_FILES_FOUND"
 							}
 						}
@@ -135,9 +137,18 @@
 							"typeProperties": {
 								"notebookPath": "/Users/prisilara8@gmail.com/pipeline-databricks-azure-ADF/notebooks/save_metadata",
 								"baseParameters": {
-									"files_metadata_json": "@string(variables('filesMetadata'))",
-									"container": "@pipeline().parameters.p_container",
-									"folder": "@pipeline().parameters.p_folder"
+									"files_metadata_json": {
+										"value": "@string(variables('filesMetadata'))",
+										"type": "Expression"
+									},
+									"container": {
+										"value": "@pipeline().parameters.p_container",
+										"type": "Expression"
+									},
+									"folder": {
+										"value": "@pipeline().parameters.p_folder",
+										"type": "Expression"
+									}
 								}
 							},
 							"linkedServiceName": {
@@ -205,8 +216,6 @@
 			{
 				"name": "ForEach1",
 				"type": "ForEach",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Filter1",
@@ -256,6 +265,7 @@
 								],
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
@@ -340,7 +350,10 @@
 							"userProperties": [],
 							"typeProperties": {
 								"variableName": "filesMetadata",
-								"value": "@variables('rowJson')"
+								"value": {
+									"value": "@variables('rowJson')",
+									"type": "Expression"
+								}
 							}
 						}
 					]
