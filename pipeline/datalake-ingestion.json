@@ -53,7 +53,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('GM').output.childItems",
+						"value": "@coalesce(activity('GM').output.childItems, json('[]'))",
 						"type": "Expression"
 					},
 					"condition": {
@@ -99,7 +99,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@not(empty(activity('Filter1').output.Value))\n",
+						"value": "@not(empty(coalesce(activity('Filter1').output.Value, json('[]'))))\n\n",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [
@@ -211,7 +211,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Filter1').output.Value\n",
+						"value": "@coalesce(activity('Filter1').output.Value, json('[]'))\n\n",
 						"type": "Expression"
 					},
 					"batchCount": 8,
