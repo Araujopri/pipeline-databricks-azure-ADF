@@ -75,8 +75,6 @@
 					{
 						"name": "Filter1",
 						"type": "Filter",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Succeeded",
 						"dependsOn": [
 							{
 								"activity": "GM",
@@ -100,8 +98,6 @@
 					{
 						"name": "Fail1",
 						"type": "Fail",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Succeeded",
 						"dependsOn": [
 							{
 								"activity": "Filter1",
@@ -128,8 +124,6 @@
 					{
 						"name": "If Condition1",
 						"type": "IfCondition",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Failed",
 						"dependsOn": [
 							{
 								"activity": "ForEach1",
@@ -254,8 +248,6 @@
 					{
 						"name": "ForEach1",
 						"type": "ForEach",
-						"state": "Inactive",
-						"onInactiveMarkAs": "Succeeded",
 						"dependsOn": [
 							{
 								"activity": "Filter1",
