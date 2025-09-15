@@ -290,10 +290,7 @@
 											"size",
 											"lastModified",
 											"contentMD5",
-											"exists",
-											"itemName",
-											"childItems",
-											"itemType"
+											"exists"
 										],
 										"storeSettings": {
 											"type": "AzureBlobFSReadSettings",
