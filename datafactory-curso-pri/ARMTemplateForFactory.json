@@ -321,49 +321,16 @@
 									"typeProperties": {
 										"variableName": "rowJson",
 										"value": [
-											"@concat(\n  '{'",
-											"\n  '\"pipelineRunId\":\"'",
-											" pipeline().RunId",
-											" '\"",
-											"'",
-											"\n  '\"fileName\":\"'",
-											" item().name",
-											" '\"",
-											"'",
-											"\n  '\"path\":\"'",
-											" pipeline().parameters.p_folder",
-											" '/'",
-											" item().name",
-											" '\"",
-											"'",
-											"\n  '\"sizeBytes\":'",
-											" string(activity('GM_File').output.size)",
-											" '",
-											"'",
-											"\n  '\"lastModifiedUtc\":\"'",
-											" string(activity('GM_File').output.lastModified)",
-											" '\"",
-											"'",
-											"\n  '\"md5\":\"'",
-											" coalesce(activity('GM_File').output.contentMD5, '')",
-											" '\"",
-											"'",
-											"\n  '\"columnCount\":'",
-											" string(coalesce(activity('GM_File').output.columnCount, 0))",
-											" '",
-											"'",
-											"\n  '\"exists\":'",
-											" toLower(string(activity('GM_File').output.exists))",
-											" '",
-											"'",
-											"\n  '\"capturedAtUtc\":\"'",
-											" utcnow(), '\"',\n  '}'\n)\n"
+											"@concat('{\"fileName\":\"'",
+											" item().name, '\"}')\n"
 										]
 									}
 								},
 								{
 									"name": "Acrescentar variavel",
 									"type": "AppendVariable",
+									"state": "Inactive",
+									"onInactiveMarkAs": "Succeeded",
 									"dependsOn": [
 										{
 											"activity": "Set variable1",
