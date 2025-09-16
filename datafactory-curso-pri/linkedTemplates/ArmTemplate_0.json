@@ -264,16 +264,12 @@
 							},
 							"ifFalseActivities": [
 								{
-									"name": "Fail2",
-									"type": "Fail",
+									"name": "Wait1",
+									"type": "Wait",
 									"dependsOn": [],
 									"userProperties": [],
 									"typeProperties": {
-										"message": {
-											"value": "@concat('Nenhum arquivo encontrado em ',         pipeline().parameters.p_container,'/',pipeline().parameters.p_folder,         '. RunId=', pipeline().RunId)",
-											"type": "Expression"
-										},
-										"errorCode": "NO_FILES_FOUND"
+										"waitTimeInSeconds": 1
 									}
 								}
 							],
