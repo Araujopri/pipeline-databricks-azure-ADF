@@ -438,7 +438,10 @@
 									"userProperties": [],
 									"typeProperties": {
 										"variableName": "rowJson",
-										"value": "@concat(\n  '{',\n  '\"path\":\"', pipeline().parameters.p_folder, '/', item().name, '\",',\n  '\"name\":\"', item().name, '\",',\n  '\"sizeBytes\":', string(coalesce(activity('GM_File').output.size, 0)), ',',\n  '\"md5\":\"', coalesce(activity('GM_File').output.contentMD5, ''), ',',\n  '\"columnCount\":', string(coalesce(activity('GM_File').output.columnCount, 0)), ',',\n  '\"lastModifiedUtc\":\"', string(coalesce(activity('GM_File').output.lastModified, '')), '\"',\n  '}'\n)\n"
+										"value": {
+											"value": "@concat(\n  '{',\n  '\"path\":\"', pipeline().parameters.p_folder, '/', item().name, '\",',\n  '\"name\":\"', item().name, '\",',\n  '\"sizeBytes\":', string(coalesce(activity('GM_File').output.size, 0)), ',',\n  '\"md5\":\"', coalesce(activity('GM_File').output.contentMD5, ''), ',',\n  '\"columnCount\":0,',\n  '\"lastModifiedUtc\":\"', string(coalesce(activity('GM_File').output.lastModified, '')), '\"',\n  '}'\n)\n",
+											"type": "Expression"
+										}
 									}
 								},
 								{
