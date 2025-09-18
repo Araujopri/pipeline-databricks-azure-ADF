@@ -336,7 +336,7 @@
 			},
 			"p_mask": {
 				"type": "string",
-				"defaultValue": "\"\" "
+				"defaultValue": ".json"
 			},
 			"p_modifiedStart": {
 				"type": "string",
