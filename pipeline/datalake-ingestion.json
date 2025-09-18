@@ -265,8 +265,7 @@
 								"fieldList": [
 									"size",
 									"lastModified",
-									"contentMD5",
-									"exists"
+									"contentMD5"
 								],
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
@@ -297,7 +296,7 @@
 							"typeProperties": {
 								"variableName": "rowJson",
 								"value": {
-									"value": "@concat(\n  '{',\n  '\"path\":\"', pipeline().parameters.p_src_folder, '/', item().name, '\",',\n  '\"name\":\"', item().name, '\",',\n  '\"sizeBytes\":', string(coalesce(activity('GM_File').output.size, 0)), ',',\n  '\"md5\":\"', coalesce(activity('GM_File').output.contentMD5, ''), '\",',\n  '\"columnCount\":0,',\n  '\"lastModifiedUtc\":\"', string(coalesce(activity('GM_File').output.lastModified, '')), '\"',\n  '}'\n)\n",
+									"value": "@concat(\n  '{',\n  '\"path\":\"', pipeline().parameters.p_src_folder, '/', item().name, '\",',\n  '\"name\":\"', item().name, '\",',\n  '\"sizeBytes\":', string(coalesce(activity('GM_File').output.size, 0)), ',',\n  '\"md5\":\"', coalesce(activity('GM_File').output.contentMD5, ''), '\",',\n  '\"columnCount\":0,',\n  '\"lastModifiedUtc\":\"', string(coalesce(activity('GM_File').output.lastModified, '')), '\"',\n  '}'\n)\n\n",
 									"type": "Expression"
 								}
 							}
