@@ -300,7 +300,8 @@
 											"folder": {
 												"value": "@pipeline().parameters.p_src_folder",
 												"type": "Expression"
-											}
+											},
+											"account": "datalakepriscylIa"
 										}
 									},
 									"linkedServiceName": {
@@ -489,7 +490,7 @@
 					},
 					"p_mask": {
 						"type": "string",
-						"defaultValue": "\"\" "
+						"defaultValue": ".json"
 					},
 					"p_modifiedStart": {
 						"type": "string",
