@@ -183,7 +183,7 @@
 												"value": "@pipeline().parameters.p_src_folder",
 												"type": "Expression"
 											},
-											"account": "datalakepriscylIa"
+											"account": "datalakepriscylla"
 										}
 									},
 									"linkedServiceName": {
