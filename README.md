@@ -133,9 +133,9 @@ Expressão:
 ```
 - True: executa três atividades (em série):
 
-  1. NB_SaveMetadata (Databricks Notebook) — salva o inventário/linhagem,
-  2. ingestao-camada-bronze (Notebook),
-  3. ingestao-camada-silver (Notebook).
+1. NB_SaveMetadata (Databricks Notebook) — salva o inventário/linhagem,
+2. ingestao-camada-bronze (Notebook),
+3. ingestao-camada-silver (Notebook).
 - False: executa Wait1 (no-op), evitando custos/erros quando não há arquivos.
 - Por quê? Evitar rodar notebooks quando não há dados a processar.
 
@@ -167,9 +167,25 @@ Execução de exemplo: pipeline concluído Bem-sucedido; notebooks bronze (~1m 4
 6. Montagem de JSON e Append → Interface simples entre ADF e notebooks (string JSON ⇒ parse no Databricks).
 7. If Condition → Evita custo de cluster/execução quando não há arquivos.
 8. Encadeamento Bronze→Silver → Mantém o contrato Medallion e a ordem correta de dependências.
-
-Fail node → Terminação clara de erro para alertas/observabilidade.
-
-## O que cada expressão faz (referência rápida)
+9. Fail node → Terminação clara de erro para alertas/observabilidade.
 
 ## Boas práticas e próximos passos
+1. Observabilidade:
+- Gravar o retorno dos notebooks (runId, status) em uma tabela de auditoria;
+- Acionar Alertas no Azure Monitor/Log Analytics em caso de falha.
+
+2. Idempotência/Watermark:
+- Usar `lastModified`/`size`/`md5` como chave natural para evitar reprocessar iguais;
+- Se desejar, filtrar por janela temporal diretamente na `Get Metadata` (hora de início/fim).
+
+3. Robustez:
+- Adicionar Retry nas atividades críticas;
+- Tratar exceções específicas no `NB_SaveMetadata` (parse do JSON, schema).
+
+4. Governança:
+- Persistir metadata em Delta (catálogo Unity) e documentar no Purview.
+
+5. Parâmetros extras:
+- Tornar o caminho do notebook e o workspace parametrizados;
+- Adicionar `p_target_catalog/schema/table` para os jobs Bronze/Silver.
+
